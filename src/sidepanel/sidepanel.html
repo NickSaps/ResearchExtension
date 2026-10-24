@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gleaner</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="library" aria-selected="true">Library</button>
+    <button role="tab" data-tab="settings" aria-selected="false">Settings</button>
+  </nav>
+
+  <main>
+    <section id="tab-library">
+      <div id="library-view">
+        <div id="last" class="card" hidden>
+          <p id="last-status" class="status"></p>
+          <dl id="last-meta"></dl>
+          <div class="row last-actions">
+            <button type="button" id="last-edit" hidden></button>
+          </div>
+          <form id="note-form" hidden>
+            <label>Add a note to this source
+              <textarea id="note-text" rows="2" placeholder="Optional short note"></textarea>
+            </label>
+            <button type="submit">Add note</button>
+            <span id="note-status" class="muted"></span>
+          </form>
+        </div>
+
+        <h2>Sources</h2>
+        <div class="row lib-toolbar">
+          <input id="search" type="search" placeholder="Search title, author, site, DOI…" aria-label="Search sources">
+          <select id="lib-style" aria-label="Citation style">
+            <option value="apa">APA 7</option>
+            <option value="mla">MLA 9</option>
+            <option value="chicago">Chicago 17</option>
+          </select>
+        </div>
+        <div class="row lib-toolbar">
+          <label class="inline"><input type="checkbox" id="select-all"> All</label>
+          <select id="export-format" aria-label="Export format">
+            <option value="md">.md</option>
+            <option value="txt">.txt</option>
+          </select>
+          <button type="button" id="export-selected">Export selected</button>
+          <button type="button" id="export-all">Export all</button>
+        </div>
+        <p id="lib-status" class="muted" role="status"></p>
+        <ul id="source-list" class="sources"></ul>
+        <p id="lib-empty" class="muted">Nothing captured yet. Select text on a page and right-click → <b>Gleaner: capture selected text</b> (Alt+Shift+S), right-click an image → <b>Gleaner: capture image</b>, or capture the whole page (Alt+Shift+G).</p>
+      </div>
+
+      <form id="edit-view" hidden autocomplete="off">
+        <h2>Edit metadata</h2>
+        <label>Title <input id="e-title" type="text"></label>
+        <label>Authors (one per line: <code>Family, Given</code>, <code>Given Family</code> or <code>{Organization}</code>)
+          <textarea id="e-authors" rows="3"></textarea>
+        </label>
+        <label>Type
+          <select id="e-type">
+            <option value="web-page">Web page</option>
+            <option value="news-article">News / magazine article</option>
+            <option value="journal-article">Journal article</option>
+            <option value="book">Book</option>
+            <option value="video">Video</option>
+          </select>
+        </label>
+        <label>Site / container <input id="e-site" type="text"></label>
+        <label>Published (YYYY, YYYY-MM or YYYY-MM-DD) <input id="e-published" type="text"></label>
+        <label>Accessed (YYYY-MM-DD) <input id="e-accessed" type="text"></label>
+        <label>URL <input id="e-url" type="url"></label>
+        <label>DOI <input id="e-doi" type="text"></label>
+        <div class="row crossref-row">
+          <button type="button" id="e-crossref">Fetch from CrossRef</button>
+          <span id="e-crossref-status" class="muted" role="status"></span>
+        </div>
+        <p class="muted">CrossRef fills in clean citation data from the DOI. Only the DOI is sent, and only when you press this button. Review the result, then Save.</p>
+        <label>Journal <input id="e-journal" type="text"></label>
+        <div class="row">
+          <label class="grow">Volume <input id="e-volume" type="text"></label>
+          <label class="grow">Issue <input id="e-issue" type="text"></label>
+          <label class="grow">Pages <input id="e-pages" type="text"></label>
+        </div>
+        <label>Publisher <input id="e-publisher" type="text"></label>
+        <label>ISBN <input id="e-isbn" type="text"></label>
+        <p class="muted">Saving updates the library and the note's properties. The note's text is never changed.</p>
+        <div class="row">
+          <button type="submit">Save</button>
+          <button type="button" id="edit-cancel">Cancel</button>
+          <span id="edit-status" class="muted" role="status"></span>
+        </div>
+      </form>
+    </section>
+
+    <section id="tab-settings" hidden>
+      <h2>Obsidian connection</h2>
+      <form id="settings-form" autocomplete="off">
+        <label>API URL
+          <input id="apiUrl" type="url" required placeholder="https://127.0.0.1:27124">
+        </label>
+        <label>API key
+          <input id="apiKey" type="password" placeholder="From Obsidian: Settings → Local REST API">
+        </label>
+        <label>Notes folder
+          <input id="notesFolder" type="text" placeholder="Sources/">
+        </label>
+        <label>Attachments folder
+          <input id="attachmentsFolder" type="text" placeholder="Sources/attachments/">
+        </label>
+        <label>Default citation style
+          <select id="citationStyle">
+            <option value="apa">APA 7</option>
+            <option value="mla">MLA 9</option>
+            <option value="chicago">Chicago 17 (notes-bibliography)</option>
+          </select>
+        </label>
+        <div class="row">
+          <button type="submit">Save</button>
+          <button type="button" id="test">Test connection</button>
+        </div>
+        <p id="status" role="status" class="status" hidden></p>
+      </form>
+
+      <h2>Permissions</h2>
+      <p class="muted">Gleaner only needs to talk to Obsidian on this computer (127.0.0.1 / localhost).</p>
+      <div class="row">
+        <button type="button" id="grant">Grant permissions</button>
+        <span id="perm-state" class="muted"></span>
+      </div>
+      <p class="muted">Saving images means downloading them from whatever site you are on, which browsers only allow with permission for all sites. Gleaner only fetches the image you right-click.</p>
+      <div class="row">
+        <button type="button" id="grant-images">Allow image downloads</button>
+        <span id="img-perm-state" class="muted"></span>
+      </div>
+
+      <h2>Keyboard shortcuts</h2>
+      <ul id="shortcut-list" class="queue"></ul>
+      <p class="muted">Change them in Chrome/Edge at <code>chrome://extensions/shortcuts</code> (Edge: <code>edge://extensions/shortcuts</code>), or in Firefox via the gear menu on <code>about:addons</code> → <i>Manage Extension Shortcuts</i>.</p>
+
+      <h2>Setup help</h2>
+      <details>
+        <summary>Option A: HTTP (simplest)</summary>
+        <ol>
+          <li>In Obsidian: Settings → Local REST API → turn on <b>Enable HTTP server</b>.</li>
+          <li>Set the API URL above to <code>http://127.0.0.1:27123</code>.</li>
+          <li>Paste the API key, then Test connection.</li>
+        </ol>
+      </details>
+      <details>
+        <summary>Option B: HTTPS with a trusted certificate</summary>
+        <ol>
+          <li>Keep the URL as <code>https://127.0.0.1:27124</code>.</li>
+          <li>Download the certificate: <a id="cert-link" href="#" target="_blank" rel="noopener">obsidian-local-rest-api.crt</a>.</li>
+          <li>Install it as a trusted root certificate authority in your OS (Windows: double-click → Install → Trusted Root Certification Authorities; macOS: Keychain Access → Always Trust), or in Firefox: Settings → Privacy &amp; Security → Certificates → View Certificates → Authorities → Import.</li>
+          <li>Restart the browser, then Test connection.</li>
+        </ol>
+      </details>
+
+      <h2>Pending sync</h2>
+      <p id="queue-empty" class="muted">Nothing waiting. Captures made while Obsidian is unreachable are kept here.</p>
+      <ul id="queue-list" class="queue"></ul>
+      <div class="row">
+        <button type="button" id="sync">Sync pending</button>
+        <span id="sync-status" class="muted"></span>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="sidepanel.js"></script>
+</body>
+</html>
